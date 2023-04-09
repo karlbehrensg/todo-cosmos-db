@@ -9,12 +9,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/data/azcosmos"
 )
 
-type azureClient struct {
+type AzureClient struct {
 	credentials *azcosmos.KeyCredential
-	client      *azcosmos.Client
+	Client      *azcosmos.Client
 }
 
-func NewAzureClient(endpoint string, key string) (*azureClient, error) {
+func NewAzureClient(endpoint string, key string) (*AzureClient, error) {
 	cred, err := azcosmos.NewKeyCredential(key)
 	if err != nil {
 		return nil, err
@@ -25,13 +25,13 @@ func NewAzureClient(endpoint string, key string) (*azureClient, error) {
 		return nil, err
 	}
 
-	return &azureClient{
+	return &AzureClient{
 		credentials: &cred,
-		client:      client,
+		Client:      client,
 	}, nil
 }
 
-func (a *azureClient) CreateDatabase(dbName string) error {
+func (a *AzureClient) CreateDatabase(dbName string) error {
 	databaseProperties := azcosmos.DatabaseProperties{ID: dbName}
 
 	errorIs409 := func(err error) bool {
@@ -39,7 +39,7 @@ func (a *azureClient) CreateDatabase(dbName string) error {
 		return err != nil && errors.As(err, &responseErr) && responseErr.StatusCode == 409
 	}
 	ctx := context.TODO()
-	databaseResp, err := a.client.CreateDatabase(ctx, databaseProperties, nil)
+	databaseResp, err := a.Client.CreateDatabase(ctx, databaseProperties, nil)
 
 	switch {
 	case errorIs409(err):
@@ -52,8 +52,8 @@ func (a *azureClient) CreateDatabase(dbName string) error {
 	return nil
 }
 
-func (a *azureClient) CreateContainer(dbName, containerName, partitionKey string) error {
-	databaseClient, err := a.client.NewDatabase(dbName)
+func (a *AzureClient) CreateContainer(dbName, containerName, partitionKey string) error {
+	databaseClient, err := a.Client.NewDatabase(dbName)
 	if err != nil {
 		return err
 	}
